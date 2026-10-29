@@ -1,16 +1,17 @@
-const mongoose = require('mongoose')
+const { request } = require("../config/supabase")
 
+async function findOne({ token }) {
+    const query = new URLSearchParams({ select: "id", token: `eq.${token}`, limit: "1" })
+    const [row] = await request("blacklisted_tokens", { query: query.toString() })
+    return row || null
+}
 
-const blacklistTokenSchema = new mongoose.Schema({
-    token: {
-        type: String,
-        required: [ true, "token is required to be added in blacklist" ]
-    }
-}, {
-    timestamps: true
-})
+async function create({ token }) {
+    return request("blacklisted_tokens", {
+        method: "POST",
+        prefer: "return=minimal",
+        body: { token }
+    })
+}
 
-const tokenBlacklistModel = mongoose.model("blacklistTokens", blacklistTokenSchema)
-
-
-module.exports = tokenBlacklistModel
+module.exports = { findOne, create }

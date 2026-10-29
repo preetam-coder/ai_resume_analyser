@@ -41,7 +41,7 @@ async function getInterviewReportByIdController(req, res) {
 
     const { interviewId } = req.params
 
-    const interviewReport = await interviewReportModel.findOne({ _id: interviewId, user: req.user.id })
+    const interviewReport = await interviewReportModel.findByIdAndUser(interviewId, req.user.id)
 
     if (!interviewReport) {
         return res.status(404).json({
@@ -60,7 +60,7 @@ async function getInterviewReportByIdController(req, res) {
  * @description Controller to get all interview reports of logged in user.
  */
 async function getAllInterviewReportsController(req, res) {
-    const interviewReports = await interviewReportModel.find({ user: req.user.id }).sort({ createdAt: -1 }).select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan")
+    const interviewReports = await interviewReportModel.findRecentByUser(req.user.id)
 
     res.status(200).json({
         message: "Interview reports fetched successfully.",
@@ -75,7 +75,7 @@ async function getAllInterviewReportsController(req, res) {
 async function generateResumePdfController(req, res) {
     const { interviewReportId } = req.params
 
-    const interviewReport = await interviewReportModel.findById(interviewReportId)
+    const interviewReport = await interviewReportModel.findByIdAndUser(interviewReportId, req.user.id)
 
     if (!interviewReport) {
         return res.status(404).json({

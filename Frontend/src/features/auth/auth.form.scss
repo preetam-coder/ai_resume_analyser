@@ -41,4 +41,13 @@ main{
         color: #e1034d;
         text-decoration: none;
     }
+
+    .auth-error {
+        color: #b42318;
+        background: #fef3f2;
+        border: 1px solid #fecdca;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        margin: 0;
+    }
 }

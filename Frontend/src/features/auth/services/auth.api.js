@@ -2,9 +2,13 @@ import axios from "axios"
 
 
 const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:3000`,
     withCredentials: true
 })
+
+function throwApiError(err) {
+    throw new Error(err.response?.data?.message || "Could not reach the server. Check that the backend is running and try again.")
+}
 
 export async function register({ username, email, password }) {
 
@@ -15,11 +19,7 @@ export async function register({ username, email, password }) {
 
         return response.data
 
-    } catch (err) {
-
-        console.log(err)
-
-    }
+    } catch (err) { throwApiError(err) }
 
 }
 
@@ -33,9 +33,7 @@ export async function login({ email, password }) {
 
         return response.data
 
-    } catch (err) {
-        console.log(err)
-    }
+    } catch (err) { throwApiError(err) }
 
 }
 
@@ -46,9 +44,7 @@ export async function logout() {
 
         return response.data
 
-    } catch (err) {
-
-    }
+    } catch (err) { throwApiError(err) }
 }
 
 export async function getMe() {
@@ -60,7 +56,8 @@ export async function getMe() {
         return response.data
 
     } catch (err) {
-        console.log(err)
+        if (err.response?.status === 401) return null
+        throwApiError(err)
     }
 
 }

@@ -18,9 +18,9 @@ async function registerUserController(req, res) {
         })
     }
 
-    const isUserAlreadyExists = await userModel.findOne({
-        $or: [ { username }, { email } ]
-    })
+    const normalizedUsername = username.trim().toLowerCase()
+    const normalizedEmail = email.trim().toLowerCase()
+    const isUserAlreadyExists = await userModel.findByUsernameOrEmail(normalizedUsername, normalizedEmail)
 
     if (isUserAlreadyExists) {
         return res.status(400).json({
@@ -30,11 +30,7 @@ async function registerUserController(req, res) {
 
     const hash = await bcrypt.hash(password, 10)
 
-    const user = await userModel.create({
-        username,
-        email,
-        password: hash
-    })
+    const user = await userModel.create({ username: normalizedUsername, email: normalizedEmail, password: hash })
 
     const token = jwt.sign(
         { id: user._id, username: user.username },
@@ -66,7 +62,7 @@ async function loginUserController(req, res) {
 
     const { email, password } = req.body
 
-    const user = await userModel.findOne({ email })
+    const user = await userModel.findByEmail(email.trim().toLowerCase())
 
     if (!user) {
         return res.status(400).json({
@@ -127,8 +123,9 @@ async function logoutUserController(req, res) {
 async function getMeController(req, res) {
 
     const user = await userModel.findById(req.user.id)
-
-
+    if (!user) {
+        return res.status(404).json({ message: "User not found" })
+    }
 
     res.status(200).json({
         message: "User details fetched successfully",
